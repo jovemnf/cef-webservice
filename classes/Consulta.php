@@ -40,11 +40,11 @@ class Consulta extends Base
             $arr = $ws->Consulta();
 
             if ($arr->getCodigoRetorno() !== 0) {
-                return $this->getErros($response, $arr->getMensagemRetorno(), $arr->getArray());
+                return $this->erros($response, $arr->getMensagemRetorno(), $arr->getArray(), $parsedBody);
             }
 
             if ($arr->getCodigoRetornoEmCodigoNegociavel() > 0) {
-                return $this->getErros($response, $arr->getMensagemRetornoEmCodigoNegociavel(), $arr->getArray());
+                return $this->erros($response, $arr->getMensagemRetornoEmCodigoNegociavel(), $arr->getArray(), $parsedBody);
             }
 
             $aux = explode('=',  $arr->getMensagemRetorno());
@@ -73,11 +73,12 @@ class Consulta extends Base
         }
     }
 
-    function getErros (Response $response, $title, array $array) {
+    function erros (Response $response, $title, array $array, array $body) {
 
         $arr = array(
             "status" => 402,
             "error" => $title,
+            "body" => $body,
             "returned" => $array
         );
 
