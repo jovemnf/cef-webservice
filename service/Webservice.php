@@ -25,10 +25,10 @@ class Webservice {
 		$this->args = $this->CleanArray($args);
 
         $this->consulta['IDENTIFICADOR_ORIGEM'] = $_SERVER['REMOTE_ADDR'];
-		$this->consulta['CEDENTE'] = $this->args['CEDENTE'];
-		$this->consulta['IDENTIFICACAO'] = $this->args['IDENTIFICACAO'];
-		$this->consulta['ENDERECO1'] = $this->args['ENDERECO1'];
-		$this->consulta['ENDERECO2'] = $this->args['ENDERECO2'];
+		$this->consulta['CEDENTE'] = isset($this->args['CEDENTE']) ? $this->args['CEDENTE'] : null;
+		$this->consulta['IDENTIFICACAO'] = isset($this->args['IDENTIFICACAO']) ? $this->args['IDENTIFICACAO'] : null;
+		$this->consulta['ENDERECO1'] = isset($this->args['ENDERECO1']) ? $this->args['ENDERECO1'] : null;
+		$this->consulta['ENDERECO2'] = isset($this->args['ENDERECO2']) ? $this->args['ENDERECO2'] : null;
 		$this->consulta['CNPJ'] = $this->args['CNPJ'];
 		$this->consulta['UNIDADE'] = $this->args['UNIDADE'];
 		$this->consulta['CODIGO_BENEFICIARIO'] = $this->args['CODIGO_BENEFICIARIO'];
