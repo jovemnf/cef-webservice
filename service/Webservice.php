@@ -30,7 +30,7 @@ class Webservice {
 		$this->consulta['ENDERECO1'] = isset($this->args['ENDERECO1']) ? $this->args['ENDERECO1'] : null;
 		$this->consulta['ENDERECO2'] = isset($this->args['ENDERECO2']) ? $this->args['ENDERECO2'] : null;
 		$this->consulta['CNPJ'] = $this->args['CNPJ'];
-		$this->consulta['UNIDADE'] = $this->args['UNIDADE'];
+		$this->consulta['UNIDADE'] = isset($this->args['UNIDADE']) ? $this->args['UNIDADE'] : null;
 		$this->consulta['CODIGO_BENEFICIARIO'] = $this->args['CODIGO_BENEFICIARIO'];
 		$this->consulta['NOSSO_NUMERO'] = $this->args['NOSSO_NUMERO'];
 	}
