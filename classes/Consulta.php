@@ -51,20 +51,20 @@ class Consulta extends Base
 
             $status = trim($aux[1]);
 
-            $liquidado = false;
+            $paid = false;
 
             switch ($status) {
                 case "LIQUIDADO":
                 case "LIQUIDADO NO CARTORIO":
                 case "TITULO JA PAGO NO DIA":
-                    $liquidado = true;
+                    $paid = true;
                     break;
             }
 
             return $response->withJson(array(
                 "status" => 200,
                 "text" => $status,
-                "liquidado" => $liquidado,
+                "paid" => $paid,
                 "returned" => $arr->getArray()
             ));
 
