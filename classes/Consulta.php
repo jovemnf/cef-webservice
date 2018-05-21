@@ -47,7 +47,7 @@ class Consulta extends Base
                 return $this->erros($response, $arr->getMensagemRetornoEmCodigoNegociavel(), $arr->getArray(), $parsedBody);
             }
 
-            $aux = explode('=',  $arr->getMensagemRetorno());
+            $aux = explode('=',  $arr->getMensagemRetornoEmCodigoNegociavel());
 
             $status = trim($aux[1]);
 
