@@ -12,6 +12,7 @@ $ composer install
 
 ## Usando
 
+
 ### URL Amigavel
 
 Crie um simples arquivo .htaccess no seu diretório principal, se você estriver 
