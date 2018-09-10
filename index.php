@@ -6,6 +6,7 @@ date_default_timezone_set('America/Sao_Paulo');
 use CaixaWebService\classes\Baixa;
 use CaixaWebService\classes\Consulta;
 use CaixaWebService\classes\Home;
+use CaixaWebService\classes\Insert;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use Tuupola\Middleware\JwtAuthentication;
@@ -76,6 +77,7 @@ try {
 
     $app->post('/consultar[/{type}]', Consulta::class . ':post');
     $app->post('/baixar[/{type}]', Baixa::class . ':post');
+    $app->post('/insert', Insert::class . ':post');
     $app->get('/status', Home::class . ':index');
     $app->get('/token', Home::class . ':getToken');
 

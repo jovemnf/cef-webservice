@@ -1,39 +1,49 @@
 <?php
 
-include('./service/Webservice.php');
+use CaixaWebService\service\Webservice;
 
 $parametros = array(
-    'FORMATO_RETORNO' => 'ARRAY',
-    'CODIGO_BENEFICIARIO' => '951955',
-    'NOSSO_NUMERO' => '1947658325871322',
-    'NUMERO_DOCUMENTO' => '674389152',
-    'DATA_VENCIMENTO' => '2017-10-18',
-    'VALOR' => '81.53',
+    'HEADER' => array(
+        "CODIGO_BENEFICIARIO" => "278972",
+        "UNIDADE" => 2524, // agencia bancaria de onde o boleto foi gerado
+        "CNPJ" => "10584488000103" // CNPJ da empresa emissora
+    ),
+    "NOSSO_NUMERO" => "14000050000000001", // numero do boleto com 17 dígitos a ser consultado
+    'NUMERO_DOCUMENTO' => '50000000001',
+    'DATA_VENCIMENTO' => '2019-12-01',
+    'VALOR' => '2000.00',
     'FLAG_ACEITE' => 'N',
-    'DATA_EMISSAO' => '2017-10-18',
-    'NUMERO_DIAS' =>  '30',
+    'DATA_EMISSAO' => '2018-09-01',
+    'JUROS_MORA' => array (
+        'TIPO' => 'ISENTO',
+        'DATA' => 0,
+        'VALOR' => 0
+    ),
+    'PAGAMENTO' => array(
+        'TIPO' => 'ACEITA_VALORES_ENTRE_MINIMO_MAXIMO',
+        'VALOR_MINIMO' => '10',
+        'QUANTIDADE_PERMITIDA' => 20
+    ),
+    'POS_VENCIMENTO' => array (
+        'ACAO' => 'DEVOLVER',
+        'NUMERO_DIAS' => 0
+    ),
     'PAGADOR' => array(
-        'CPF' => '0036893461927',
-        'NOME' => 'CARLOS FERNANDO ROSA',
+        'CPF' => '09772938740',
+        'NOME' => 'WALLACE PACHECO DA SILVA',
         'ENDERECO' => array(
-            'LOGRADOURO' => 'ROD ADMAR GONZAGA, 1823',
-            'BAIRRO' => 'ITACORUBI',
-            'CIDADE' => 'FLORIANOPOLIS',
-            'UF' => 'SC',
-            'CEP' => '88034000',
-        ),
-        'FICHA_COMPENSACAO' => array(
-            'MENSAGENS' => array(
-                'MENSAGEM1' => 'PRIMEIRA LINHA DA MENSAGEM',
-                'MENSAGEM2' => 'SEGUNDA LINHA DA MENSAGEM'
-            )
+            'LOGRADOURO' => 'AV PELINCA, 245',
+            'BAIRRO' => 'PELINCA',
+            'CIDADE' => 'CAMPOS DOS GOYTACAZES',
+            'UF' => 'RJ',
+            'CEP' => '28035053',
         )
     )
 );
 
 try {
-    $ws = new WebserviceCaixa($parametros);
-    $ws->Gera();
+    $ws = new Webservice($parametros);
+    $ws->Insert($parametros);
 } catch (Exception $e) {
     echo $e;
 }

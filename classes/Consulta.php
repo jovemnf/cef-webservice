@@ -20,11 +20,10 @@ class Consulta extends Base
     /**
      * @param Request $request
      * @param Response $response
-     * @param array $args
      * @return Response
      * @throws \Exception
      */
-    function post (Request $request, Response $response, array $args) {
+    function post (Request $request, Response $response) {
         try {
 
             $parsedBody = $request->getParsedBody();

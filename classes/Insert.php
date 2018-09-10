@@ -94,6 +94,26 @@ class Insert extends Base
                 return $this->getErros($response, "PAGADOR => ENDERECO não informado", $parsedBody);
             }
 
+            if (strlen($endereco['LOGRADOURO']) > 40) {
+                return $this->getErros($response, "LOGRADOURO maior que 40 caracteres", $parsedBody);
+            }
+
+            if (strlen($endereco['CIDADE']) > 15) {
+                return $this->getErros($response, "CIDADE maior que 15 caracteres", $parsedBody);
+            }
+
+            if (strlen($endereco['BAIRRO']) > 15) {
+                return $this->getErros($response, "BAIRRO maior que 15 caracteres", $parsedBody);
+            }
+
+            if (strlen($endereco['UF']) > 2) {
+                return $this->getErros($response, "UF maior que 2 caracteres", $parsedBody);
+            }
+
+            if (strlen($endereco['CEP']) > 8) {
+                return $this->getErros($response, "CEP maior que 8 caracteres", $parsedBody);
+            }
+
             if (! $parsedBody['DADOS']['POS_VENCIMENTO']) {
                 return $this->getErros($response, "POS_VENCIMENTO não informado", $parsedBody);
             }
@@ -135,7 +155,7 @@ class Insert extends Base
             }
 
             if ($parsedBody['DADOS']['POS_VENCIMENTO']['ACAO'] != 'DEVOLVER' and $parsedBody['DADOS']['POS_VENCIMENTO']['ACAO'] != 'PROTESTAR') {
-                return $this->getErros($response, "POS_VENCIMENTO => ACAO informado está incorreto", $parsedBody);
+                return $this->getErros($response, "POS_VENCIMENTO => ACAO informada está incorreta", $parsedBody);
             }
 
             $ws = new Webservice($parsedBody['HEADER']);

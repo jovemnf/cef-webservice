@@ -77,4 +77,151 @@ chave KEY_SECRET e mandar no header da solicitação.
     
 ```
 
-dfg
+### Consultando boleto
+
+JSON enviado a rota /consultar
+
+```json
+{
+	"HEADER": {
+        "CODIGO_BENEFICIARIO": 123456, // código do convênio
+        "NOSSO_NUMERO": "14000001000267448", // numero do boleto com 17 dígitos a ser consultado
+        "UNIDADE": 1234, // agencia bancaria de onde o boleto foi gerado
+        "CNPJ": "10884488000122" // CNPJ da empresa emissora
+    }
+}
+```
+
+
+Valores retornados 
+
+```json
+{
+    "status": 200,
+    "text": "EM ABERTO",
+    "paid": false, // true para boleto já pago e false para boleto aberto
+    "returned": {
+        "HEADER": {
+            "VERSAO": "2.0",
+            "AUTENTICACAO": "dfghdfghsdfhg", // token de autenticação com a caixa
+            "USUARIO_SERVICO": "SGCBS02P",
+            "OPERACAO": "CONSULTA_BOLETO",
+            "SISTEMA_ORIGEM": "SIGCB",
+            "UNIDADE": "1234",
+            "IDENTIFICADOR_ORIGEM": "::1",
+            "DATA_HORA": "20180906162017",
+            "ID_PROCESSO": "278972"
+        },
+        "COD_RETORNO": "00",
+        "ORIGEM_RETORNO": "CONSULTA_COBRANCA_BANCARIA",
+        "MSG_RETORNO": "",
+        "DADOS": {
+            "CONTROLE_NEGOCIAL": {
+                "ORIGEM_RETORNO": "SIGCB",
+                "COD_RETORNO": "0",
+                "MENSAGENS": {
+                    "RETORNO": "(0) OPERACAO EFETUADA - SITUACAO DO TITULO = EM ABERTO"
+                }
+            },
+            "CONSULTA_BOLETO": {
+                "TITULO": {
+                    "NUMERO_DOCUMENTO": "1000267448",
+                    "DATA_VENCIMENTO": "2018-08-21",
+                    "VALOR": "59.90",
+                    "TIPO_ESPECIE": "4",
+                    "FLAG_ACEITE": "N",
+                    "DATA_EMISSAO": "2018-07-03",
+                    "JUROS_MORA": {
+                        "TIPO": "VALOR_POR_DIA",
+                        "DATA": "2018-08-22",
+                        "VALOR": "0.02"
+                    },
+                    "VALOR_ABATIMENTO": "0.00",
+                    "POS_VENCIMENTO": {
+                        "ACAO": "DEVOLVER",
+                        "NUMERO_DIAS": "120"
+                    },
+                    "CODIGO_MOEDA": "9",
+                    "PAGADOR": {
+                        "CPF": "16192088717",
+                        "NOME": "TESTE BARRETO ALVES",
+                        "ENDERECO": {
+                            "LOGRADOURO": "RUA 03",
+                            "BAIRRO": "PARQUE NOVO JOC",
+                            "CIDADE": "CAMPOS DOS GOYT",
+                            "UF": "RJ",
+                            "CEP": "28100000"
+                        }
+                    },
+                    "SACADOR_AVALISTA": {
+                        "CNPJ": "10884488000122",
+                        "RAZAO_SOCIAL": "EMPRESA A"
+                    },
+                    "MULTA": {
+                        "DATA": "2018-08-22",
+                        "PERCENTUAL": "2.00"
+                    },
+                    "VALOR_IOF": "0.00",
+                    "IDENTIFICACAO_EMPRESA": "1000267448",
+                    "PAGAMENTO": {
+                        "QUANTIDADE_PERMITIDA": "1",
+                        "TIPO": "NAO_ACEITA_VALOR_DIVERGENTE",
+                        "VALOR_MAXIMO": "0.00",
+                        "VALOR_MINIMO": "0.00"
+                    },
+                    "CODIGO_BARRAS": "10493763900000061412789728034534534534574484",
+                    "LINHA_DIGITAVEL": "10492789792803453453453453453453453453576390000006141",
+                    "URL": "https://boletoonline.caixa.gov.br/ecobranca/SIGCB/imprimir/123456/14000001456467448"
+                },
+                "FLAG_REGISTRO": "S"
+            }
+        }
+    }
+}
+```
+
+```json
+{
+	"HEADER": {
+        "CODIGO_BENEFICIARIO": 123456,
+        "NOSSO_NUMERO": "14000050000000001",
+        "UNIDADE": 2524,
+        "CNPJ": "10584466006703"
+    },
+    "DADOS": {
+    	"NOSSO_NUMERO": "14000050000000001",
+	    "NUMERO_DOCUMENTO": "50000000001",
+	    "DATA_VENCIMENTO": "2019-12-01",
+	    "VALOR": 2000.00,
+	    "FLAG_ACEITE": "N",
+	    "DATA_EMISSAO": "2018-09-01",
+	    "JUROS_MORA": {
+	        "TIPO": "ISENTO",
+	        "VALOR": 0
+	    },
+	    "PAGAMENTO": {
+	        // não sei o motivo mas, se QUANTIDADE_PERMITIDA vier após TIPO a CEF rejeita o boleto
+	    	"QUANTIDADE_PERMITIDA": 20,
+	        "TIPO": "ACEITA_QUALQUER_VALOR",
+	        "VALOR_MINIMO": 10,
+	        "VALOR_MAXIMO": 2000
+	    },
+	    "POS_VENCIMENTO":{
+	        "ACAO": "DEVOLVER",
+	        "NUMERO_DIAS": 0
+	    },
+	    "PAGADOR": {
+	        "CPF": "09772938567",
+	        "NOME": "WALLACE PACHECO DA SILVA",
+	        "ENDERECO": {
+	            "LOGRADOURO": "AV PELINCA, 245",
+	            "BAIRRO": "PELINCA",
+	            "CIDADE": "CAMPOS",
+	            "UF": "RJ",
+	            "CEP": "28035053"
+	        }
+	    }
+    }
+}
+```
+

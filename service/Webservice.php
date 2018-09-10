@@ -21,9 +21,7 @@ class Webservice {
      * @param array $args
 	 */
 	public function __construct($args) {
-
 		$this->args = $this->CleanArray($args);
-
         $this->consulta['IDENTIFICADOR_ORIGEM'] = $_SERVER['REMOTE_ADDR'];
 		$this->consulta['CEDENTE'] = isset($this->args['CEDENTE']) ? $this->args['CEDENTE'] : null;
 		$this->consulta['IDENTIFICACAO'] = isset($this->args['IDENTIFICACAO']) ? $this->args['IDENTIFICACAO'] : null;
@@ -35,18 +33,28 @@ class Webservice {
 		$this->consulta['NOSSO_NUMERO'] = $this->args['NOSSO_NUMERO'];
 	}
 
-
 	/**
 	 * Cálculo do Hash de autenticação segundo página 7 do manual.
 	 */
-	private function HashAutenticacao($args) {
-		$raw = preg_replace('/[^A-Za-z0-9]/', '',
+	private function HashAutenticacao() {
+
+        $numeroParaHash = preg_replace('/[^A-Za-z0-9]/', '',
+                str_pad($this->GetCodigoBeneficiario() , 7, '0', STR_PAD_LEFT) .
+                $this->GetNossoNumero() .
+                strftime('%d%m%Y', strtotime($this->getDataVencimento()))) .
+            str_pad(preg_replace('/[^0-9]/', '', $this->getValor()), 15, '0', STR_PAD_LEFT) .
+            str_pad($this->GetCnpj(), 14, '0', STR_PAD_LEFT);
+
+        $autenticacao = base64_encode(hash('sha256', $numeroParaHash, true));
+        return $autenticacao;
+
+        $raw = preg_replace('/[^A-Za-z0-9]/', '',
 			'0' . $this->GetCodigoBeneficiario() .
 			$this->GetNossoNumero() .
-			((!$args['DATA_VENCIMENTO']) ?
+			((!$this->getDataVencimento()) ?
 				sprintf('%08d', 0) :
-				strftime('%d%m%Y', strtotime($args['DATA_VENCIMENTO']))) .
-			sprintf('%015d', preg_replace('/[^0-9]/', '', $args['VALOR'])) .
+				strftime('%d%m%Y', strtotime( $this->getDataVencimento() ))) .
+			sprintf('%015d', preg_replace('/[^0-9]/', '', $this->getValor())) .
 			sprintf('%014d', $this->GetCnpj()));
 		return base64_encode(hash('sha256', $raw, true));
 	}
@@ -60,12 +68,7 @@ class Webservice {
 	    try {
 
             // Para consultas, DATA_VENCIMENTO e VALOR devem ser preenchidos com zeros
-            $autenticacao = $this->HashAutenticacao(
-                array(
-                    'DATA_VENCIMENTO' => 0,
-                    'VALOR' => 0,
-                )
-            );
+            $autenticacao = $this->HashAutenticacao();
 
             $xml_array = array(
                 'sibar_base:HEADER' => array(
@@ -180,12 +183,12 @@ class Webservice {
      * @throws \Exception
      */
 	public function Insert($args) {
-		$args = array_merge($this->args, $args);
+        $this->args = $this->CleanArray($args);
 
 		$xml_array = array(
 			'sibar_base:HEADER' => array(
 				'VERSAO' => '2.0',
-				'AUTENTICACAO' => $this->HashAutenticacao($args),
+				'AUTENTICACAO' => $this->HashAutenticacao(),
 				'USUARIO_SERVICO' => 'SGCBS02P',
 				'OPERACAO' => 'INCLUI_BOLETO',
 				'SISTEMA_ORIGEM' => 'SIGCB',
@@ -200,8 +203,8 @@ class Webservice {
 					'TITULO' => array(
 						'NOSSO_NUMERO' => $this->GetNossoNumero(),
 						'NUMERO_DOCUMENTO' => $args['NUMERO_DOCUMENTO'],
-						'DATA_VENCIMENTO' => $args['DATA_VENCIMENTO'],
-						'VALOR' => $args['VALOR'],
+						'DATA_VENCIMENTO' => $this->getDataVencimento(),
+						'VALOR' => $this->getValor(),
 						'TIPO_ESPECIE' => $args['TIPO_ESPECIE'],
 						'FLAG_ACEITE' => $args['FLAG_ACEITE'],
 						'DATA_EMISSAO' => $args['DATA_EMISSAO'],
@@ -210,15 +213,27 @@ class Webservice {
 						'POS_VENCIMENTO' => $args['POS_VENCIMENTO'],
 						'CODIGO_MOEDA' => '09',
 						'PAGADOR' => $args['PAGADOR'],
-						'PAGAMENTO' => $args['PAGAMENTO'],
-						'SACADOR_AVALISTA' => $args['SACADOR_AVALISTA'],
-						'MULTA' => $args['MULTA'],
-                        'DESCONTOS' => $args['DESCONTOS'],
-						'FICHA_COMPENSACAO' => $args['FICHA_COMPENSACAO']
+						'PAGAMENTO' => $args['PAGAMENTO']
 					)
 				)
 			)
 		);
+
+		if (isset($args['SACADOR_AVALISTA'])) {
+		    $xml_array["DADOS"]["INCLUI_BOLETO"]["TITULO"]["SACADOR_AVALISTA"] = $args['SACADOR_AVALISTA'];
+        }
+
+        if (isset($args['MULTA'])) {
+            $xml_array["DADOS"]["INCLUI_BOLETO"]["TITULO"]["MULTA"] = $args['MULTA'];
+        }
+
+        if (isset($args['DESCONTOS'])) {
+            $xml_array["DADOS"]["INCLUI_BOLETO"]["TITULO"]["DESCONTOS"] = $args['DESCONTOS'];
+        }
+
+        if (isset($args['FICHA_COMPENSACAO'])) {
+            $xml_array["DADOS"]["INCLUI_BOLETO"]["TITULO"]["FICHA_COMPENSACAO"] = $args['FICHA_COMPENSACAO'];
+        }
 
         try {
             return new ResponseInsert($this->Manutencao($xml_array, 'INCLUI_BOLETO'));
@@ -335,5 +350,13 @@ class Webservice {
 	function GetCodigoBeneficiario() { return $this->consulta['CODIGO_BENEFICIARIO']; }
 	function GetNossoNumero()        { return $this->consulta['NOSSO_NUMERO']; }
 	function GetFlagAceite()         { return $this->args['FLAG_ACEITE']; }
+
+    function getValor()             {
+	    return (isset($this->args['VALOR'])) ? $this->args['VALOR'] : 0;
+	}
+
+    function getDataVencimento()             {
+        return (isset($this->args['DATA_VENCIMENTO'])) ? $this->args['DATA_VENCIMENTO'] : 0;
+    }
 
 }

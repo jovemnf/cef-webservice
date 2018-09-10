@@ -1,7 +1,8 @@
 <?php
-date_default_timezone_set('America/Sao_Paulo');
 
-include('./service/Webservice.php');
+use CaixaWebService\service\Webservice;
+
+date_default_timezone_set('America/Sao_Paulo');
 
 $parametros = array(
     "UNIDADE" => '1234',
@@ -9,7 +10,7 @@ $parametros = array(
     'NOSSO_NUMERO' => '1947658325871322'
 );
 
-$ws = new \CaixaWebService\service\Webservice($parametros);
+$ws = new Webservice($parametros);
 
 $param = array (
     "NOSSO_NUMERO" => "12456745674564",
