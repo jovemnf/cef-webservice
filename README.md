@@ -84,7 +84,7 @@ JSON enviado a rota /consultar
 ```json
 {
 	"HEADER": {
-        "CODIGO_BENEFICIARIO": 123456, // código do convênio
+        "CODIGO_BENEFICIARIO": 123456, /* código do convênio */
         "NOSSO_NUMERO": "14000001000267448", // numero do boleto com 17 dígitos a ser consultado
         "UNIDADE": 1234, // agencia bancaria de onde o boleto foi gerado
         "CNPJ": "10884488000122" // CNPJ da empresa emissora

@@ -45,8 +45,7 @@ class Webservice {
             str_pad(preg_replace('/[^0-9]/', '', $this->getValor()), 15, '0', STR_PAD_LEFT) .
             str_pad($this->GetCnpj(), 14, '0', STR_PAD_LEFT);
 
-        $autenticacao = base64_encode(hash('sha256', $numeroParaHash, true));
-        return $autenticacao;
+        return base64_encode(hash('sha256', $numeroParaHash, true));
 
         $raw = preg_replace('/[^A-Za-z0-9]/', '',
 			'0' . $this->GetCodigoBeneficiario() .
