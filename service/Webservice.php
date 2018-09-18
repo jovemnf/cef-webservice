@@ -42,10 +42,18 @@ class Webservice {
 	    try {
             $numeroParaHash = preg_replace('/[^A-Za-z0-9]/', '',
                     str_pad($this->GetCodigoBeneficiario() , 7, '0', STR_PAD_LEFT) .
-                    $this->GetNossoNumero() .
-                    strftime('%d%m%Y', strtotime($this->getDataVencimento()))) .
-                str_pad(str_replace('.', '', number_format($this->getValor(), 2, '.', '')), 15, '0', STR_PAD_LEFT) .
-                str_pad($this->GetCnpj(), 14, '0', STR_PAD_LEFT);
+                    $this->GetNossoNumero());
+
+            if ($this->getDataVencimento() == 0) {
+                $numeroParaHash .= str_pad("", 8, '0', STR_PAD_LEFT);
+            } else {
+                $numeroParaHash .= strftime('%d%m%Y', strtotime($this->getDataVencimento()));
+            }
+
+            $valorFormatado = number_format($this->getValor(), 2, '.', '');
+            $valorReplace = str_replace('.', '', $valorFormatado);
+            $numeroParaHash .= str_pad($valorReplace, 15, '0', STR_PAD_LEFT);
+            $numeroParaHash .= str_pad($this->GetCnpj(), 14, '0', STR_PAD_LEFT);
 
             return base64_encode(hash('sha256', $numeroParaHash, true));
         } catch (\Exception $e) {
