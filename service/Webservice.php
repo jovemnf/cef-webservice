@@ -33,29 +33,24 @@ class Webservice {
 		$this->consulta['NOSSO_NUMERO'] = $this->args['NOSSO_NUMERO'];
 	}
 
-	/**
-	 * Cálculo do Hash de autenticação segundo página 7 do manual.
-	 */
+    /**
+     * Cálculo do Hash de autenticação segundo página 7 do manual.
+     * @return string
+     * @throws \Exception
+     */
 	private function HashAutenticacao() {
+	    try {
+            $numeroParaHash = preg_replace('/[^A-Za-z0-9]/', '',
+                    str_pad($this->GetCodigoBeneficiario() , 7, '0', STR_PAD_LEFT) .
+                    $this->GetNossoNumero() .
+                    strftime('%d%m%Y', strtotime($this->getDataVencimento()))) .
+                str_pad(str_replace('.', '', number_format($this->getValor(), 2, '.', '')), 15, '0', STR_PAD_LEFT) .
+                str_pad($this->GetCnpj(), 14, '0', STR_PAD_LEFT);
 
-        $numeroParaHash = preg_replace('/[^A-Za-z0-9]/', '',
-                str_pad($this->GetCodigoBeneficiario() , 7, '0', STR_PAD_LEFT) .
-                $this->GetNossoNumero() .
-                strftime('%d%m%Y', strtotime($this->getDataVencimento()))) .
-            str_pad(preg_replace('/[^0-9]/', '', $this->getValor()), 15, '0', STR_PAD_LEFT) .
-            str_pad($this->GetCnpj(), 14, '0', STR_PAD_LEFT);
-
-        return base64_encode(hash('sha256', $numeroParaHash, true));
-
-        $raw = preg_replace('/[^A-Za-z0-9]/', '',
-			'0' . $this->GetCodigoBeneficiario() .
-			$this->GetNossoNumero() .
-			((!$this->getDataVencimento()) ?
-				sprintf('%08d', 0) :
-				strftime('%d%m%Y', strtotime( $this->getDataVencimento() ))) .
-			sprintf('%015d', preg_replace('/[^0-9]/', '', $this->getValor())) .
-			sprintf('%014d', $this->GetCnpj()));
-		return base64_encode(hash('sha256', $raw, true));
+            return base64_encode(hash('sha256', $numeroParaHash, true));
+        } catch (\Exception $e) {
+	        throw $e;
+        }
 	}
 
     /**
@@ -120,7 +115,7 @@ class Webservice {
      * @return ResponseConsulta
      * @throws \Exception
      */
-	public function Consulta() {
+	public function Consultar() {
 	    try {
             $xml = $this->createXmlConsulta();
             $call = $this->Call(Webservice::wsdl_consulta, 'CONSULTA_BOLETO', $xml);
@@ -131,11 +126,11 @@ class Webservice {
         }
 	}
 
-	/**
-	 * Construção do documento XML para incluir e alterar
-	 *
-	 * Operações de inclusão e alteração
-	 */
+    /**
+     * Construção do documento XML para incluir e alterar
+     * @param $args
+     * @return null|string|string[]
+     */
 	private function createXmlManutencao($args) {
 		$xml_root = 'manutencaocobrancabancaria:SERVICO_ENTRADA';
 		$xml = new XmlDomConstruct('1.0', 'iso-8859-1');
@@ -181,61 +176,11 @@ class Webservice {
      * @return ResponseInsert
      * @throws \Exception
      */
-	public function Insert($args) {
-        $this->args = $this->CleanArray($args);
-
-		$xml_array = array(
-			'sibar_base:HEADER' => array(
-				'VERSAO' => '2.0',
-				'AUTENTICACAO' => $this->HashAutenticacao(),
-				'USUARIO_SERVICO' => 'SGCBS02P',
-				'OPERACAO' => 'INCLUI_BOLETO',
-				'SISTEMA_ORIGEM' => 'SIGCB',
-				'UNIDADE' => $this->GetUnidade(),
-				'IDENTIFICADOR_ORIGEM' => $this->consulta['IDENTIFICADOR_ORIGEM'],
-				'DATA_HORA' => date('YmdHis'),
-				'ID_PROCESSO' => $this->GetCodigoBeneficiario()
-			),
-			'DADOS' => array(
-				'INCLUI_BOLETO' => array(
-					'CODIGO_BENEFICIARIO' => $this->GetCodigoBeneficiario(),
-					'TITULO' => array(
-						'NOSSO_NUMERO' => $this->GetNossoNumero(),
-						'NUMERO_DOCUMENTO' => $args['NUMERO_DOCUMENTO'],
-						'DATA_VENCIMENTO' => $this->getDataVencimento(),
-						'VALOR' => $this->getValor(),
-						'TIPO_ESPECIE' => $args['TIPO_ESPECIE'],
-						'FLAG_ACEITE' => $args['FLAG_ACEITE'],
-						'DATA_EMISSAO' => $args['DATA_EMISSAO'],
-						'JUROS_MORA' => $args['JUROS_MORA'],
-						'VALOR_ABATIMENTO' => $args['VALOR_ABATIMENTO'],
-						'POS_VENCIMENTO' => $args['POS_VENCIMENTO'],
-						'CODIGO_MOEDA' => '09',
-						'PAGADOR' => $args['PAGADOR'],
-						'PAGAMENTO' => $args['PAGAMENTO']
-					)
-				)
-			)
-		);
-
-		if (isset($args['SACADOR_AVALISTA'])) {
-		    $xml_array["DADOS"]["INCLUI_BOLETO"]["TITULO"]["SACADOR_AVALISTA"] = $args['SACADOR_AVALISTA'];
-        }
-
-        if (isset($args['MULTA'])) {
-            $xml_array["DADOS"]["INCLUI_BOLETO"]["TITULO"]["MULTA"] = $args['MULTA'];
-        }
-
-        if (isset($args['DESCONTOS'])) {
-            $xml_array["DADOS"]["INCLUI_BOLETO"]["TITULO"]["DESCONTOS"] = $args['DESCONTOS'];
-        }
-
-        if (isset($args['FICHA_COMPENSACAO'])) {
-            $xml_array["DADOS"]["INCLUI_BOLETO"]["TITULO"]["FICHA_COMPENSACAO"] = $args['FICHA_COMPENSACAO'];
-        }
-
+	public function Inserir($args) {
         try {
-            return new ResponseInsert($this->Manutencao($xml_array, 'INCLUI_BOLETO'));
+            $xml_array = $this->createXmlInsert($args);
+		    $xml = $this->Manutencao($xml_array, 'INCLUI_BOLETO');
+            return new ResponseInsert($xml);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -248,36 +193,9 @@ class Webservice {
      * @return ResponseBaixa
      * @throws \Exception
      */
-    public function Baixa() {
-        // Para Baixas, DATA_VENCIMENTO e VALOR devem ser preenchidos com zeros
-        $autenticacao = $this->HashAutenticacao(
-            array(
-                'DATA_VENCIMENTO' => 0,
-                'VALOR' => 0,
-            )
-        );
-
-        $xml_array = array(
-            'sibar_base:HEADER' => array(
-                'VERSAO' => '2.0',
-                'AUTENTICACAO' => $this->HashAutenticacao($autenticacao),
-                'USUARIO_SERVICO' => 'SGCBS02P',
-                'OPERACAO' => 'BAIXA_BOLETO',
-                'SISTEMA_ORIGEM' => 'SIGCB',
-                'UNIDADE' => $this->GetUnidade(),
-                'IDENTIFICADOR_ORIGEM' => $this->consulta['IDENTIFICADOR_ORIGEM'],
-                'DATA_HORA' => date('YmdHis'),
-                'ID_PROCESSO' => $this->GetCodigoBeneficiario(),
-            ),
-            'DADOS' => array(
-                'BAIXA_BOLETO' => array(
-                    'CODIGO_BENEFICIARIO' => $this->GetCodigoBeneficiario(),
-                    'NOSSO_NUMERO' => $this->GetNossoNumero()
-                )
-            )
-        );
-
+    public function Baixar() {
         try {
+            $xml_array = $this->createXmlBaixa();
             return new ResponseBaixa($this->Manutencao($xml_array, 'BAIXA_BOLETO'));
         } catch (\Exception $e) {
             throw $e;
@@ -292,46 +210,9 @@ class Webservice {
      * @return ResponseUpdate
      * @throws \Exception
      */
-	public function Update($args) {
-		$args = array_merge($this->args, $args);
-		$xml_array = array(
-			'sibar_base:HEADER' => array(
-				'VERSAO' => '2.0',
-				'AUTENTICACAO' => $this->HashAutenticacao($args),
-				'USUARIO_SERVICO' => 'SGCBS02P',
-				'OPERACAO' => 'ALTERA_BOLETO',
-				'SISTEMA_ORIGEM' => 'SIGCB',
-				'UNIDADE' => $this->GetUnidade(),
-				'IDENTIFICADOR_ORIGEM' => $this->consulta['IDENTIFICADOR_ORIGEM'],
-				'DATA_HORA' => date('YmdHis'),
-				'ID_PROCESSO' => $this->GetCodigoBeneficiario(),
-			),
-			'DADOS' => array(
-				'ALTERA_BOLETO' => array(
-					'CODIGO_BENEFICIARIO' => $this->GetCodigoBeneficiario(),
-					'TITULO' => array(
-						'NOSSO_NUMERO' => $args['NOSSO_NUMERO'],
-						'NUMERO_DOCUMENTO' => $args['NUMERO_DOCUMENTO'],
-						'DATA_VENCIMENTO' => $args['DATA_VENCIMENTO'],
-						'VALOR' => $args['VALOR'],
-						'TIPO_ESPECIE' => '99',
-						'FLAG_ACEITE' => $args['FLAG_ACEITE'],
-						'JUROS_MORA' => array(
-							'TIPO' => 'ISENTO',
-							'VALOR' => '0',
-						),
-						'VALOR_ABATIMENTO' => '0',
-						'POS_VENCIMENTO' => array(
-							'ACAO' => 'DEVOLVER',
-							'NUMERO_DIAS' => $args['NUMERO_DIAS'],
-						),
-						'FICHA_COMPENSACAO' => $args['FICHA_COMPENSACAO']
-					),
-				)
-			)
-		);
-
+	public function Atualizar($args) {
         try {
+            $xml_array = $this->createXmlUpdate($args);
             return new ResponseUpdate($this->Manutencao($xml_array, 'ALTERA_BOLETO'));
         } catch (\Exception $e) {
             throw $e;
@@ -339,23 +220,170 @@ class Webservice {
     }
 	
 	/*** Getters ***/
-	
-	function GetCedente()            { return $this->consulta['CEDENTE']; }
-	function GetIdentificacao()      { return $this->consulta['IDENTIFICACAO']; }
-	function GetCnpj()               { return $this->consulta['CNPJ']; }
-	function GetEndereco1()          { return $this->consulta['ENDERECO1']; }
-	function GetEndereco2()          { return $this->consulta['ENDERECO2']; }
-	function GetUnidade()            { return $this->consulta['UNIDADE']; }
-	function GetCodigoBeneficiario() { return $this->consulta['CODIGO_BENEFICIARIO']; }
-	function GetNossoNumero()        { return $this->consulta['NOSSO_NUMERO']; }
-	function GetFlagAceite()         { return $this->args['FLAG_ACEITE']; }
+    private function GetCedente()            { return $this->consulta['CEDENTE']; }
+    private function GetIdentificacao()      { return $this->consulta['IDENTIFICACAO']; }
+    private function GetCnpj()               { return $this->consulta['CNPJ']; }
+    private function GetEndereco1()          { return $this->consulta['ENDERECO1']; }
+    private function GetEndereco2()          { return $this->consulta['ENDERECO2']; }
+    private function GetUnidade()            { return $this->consulta['UNIDADE']; }
+    private function GetCodigoBeneficiario() { return $this->consulta['CODIGO_BENEFICIARIO']; }
+    private function GetNossoNumero()        { return $this->consulta['NOSSO_NUMERO']; }
+    private function GetFlagAceite()         { return $this->args['FLAG_ACEITE']; }
 
-    function getValor()             {
+    private function getValor()             {
 	    return (isset($this->args['VALOR'])) ? $this->args['VALOR'] : 0;
 	}
 
-    function getDataVencimento()             {
+    private function getDataVencimento()             {
         return (isset($this->args['DATA_VENCIMENTO'])) ? $this->args['DATA_VENCIMENTO'] : 0;
+    }
+
+    /**
+     * @param $args
+     * @return array
+     * @throws \Exception
+     */
+    private function createXmlUpdate($args): array
+    {
+        $args = array_merge($this->args, $args);
+        try {
+            $xml_array = array(
+                'sibar_base:HEADER' => array(
+                    'VERSAO' => '2.0',
+                    'AUTENTICACAO' => $this->HashAutenticacao(),
+                    'USUARIO_SERVICO' => 'SGCBS02P',
+                    'OPERACAO' => 'ALTERA_BOLETO',
+                    'SISTEMA_ORIGEM' => 'SIGCB',
+                    'UNIDADE' => $this->GetUnidade(),
+                    'IDENTIFICADOR_ORIGEM' => $this->consulta['IDENTIFICADOR_ORIGEM'],
+                    'DATA_HORA' => date('YmdHis'),
+                    'ID_PROCESSO' => $this->GetCodigoBeneficiario(),
+                ),
+                'DADOS' => array(
+                    'ALTERA_BOLETO' => array(
+                        'CODIGO_BENEFICIARIO' => $this->GetCodigoBeneficiario(),
+                        'TITULO' => array(
+                            'NOSSO_NUMERO' => $args['NOSSO_NUMERO'],
+                            'NUMERO_DOCUMENTO' => $args['NUMERO_DOCUMENTO'],
+                            'DATA_VENCIMENTO' => $args['DATA_VENCIMENTO'],
+                            'VALOR' => $args['VALOR'],
+                            'TIPO_ESPECIE' => '99',
+                            'FLAG_ACEITE' => $args['FLAG_ACEITE'],
+                            'JUROS_MORA' => array(
+                                'TIPO' => 'ISENTO',
+                                'VALOR' => '0',
+                            ),
+                            'VALOR_ABATIMENTO' => '0',
+                            'POS_VENCIMENTO' => array(
+                                'ACAO' => 'DEVOLVER',
+                                'NUMERO_DIAS' => $args['NUMERO_DIAS'],
+                            ),
+                            'FICHA_COMPENSACAO' => $args['FICHA_COMPENSACAO']
+                        ),
+                    )
+                )
+            );
+        } catch (\Exception $e) {
+            throw $e;
+        }
+        return $xml_array;
+    }
+
+    /**
+     * @param $args
+     * @return array
+     * @throws \Exception
+     */
+    private function createXmlInsert($args): array
+    {
+        $this->args = $this->CleanArray($args);
+
+        try {
+            $xml_array = array(
+                'sibar_base:HEADER' => array(
+                    'VERSAO' => '2.0',
+                    'AUTENTICACAO' => $this->HashAutenticacao(),
+                    'USUARIO_SERVICO' => 'SGCBS02P',
+                    'OPERACAO' => 'INCLUI_BOLETO',
+                    'SISTEMA_ORIGEM' => 'SIGCB',
+                    'UNIDADE' => $this->GetUnidade(),
+                    'IDENTIFICADOR_ORIGEM' => $this->consulta['IDENTIFICADOR_ORIGEM'],
+                    'DATA_HORA' => date('YmdHis'),
+                    'ID_PROCESSO' => $this->GetCodigoBeneficiario()
+                ),
+                'DADOS' => array(
+                    'INCLUI_BOLETO' => array(
+                        'CODIGO_BENEFICIARIO' => $this->GetCodigoBeneficiario(),
+                        'TITULO' => array(
+                            'NOSSO_NUMERO' => $this->GetNossoNumero(),
+                            'NUMERO_DOCUMENTO' => $args['NUMERO_DOCUMENTO'],
+                            'DATA_VENCIMENTO' => $this->getDataVencimento(),
+                            'VALOR' => $this->getValor(),
+                            'TIPO_ESPECIE' => $args['TIPO_ESPECIE'],
+                            'FLAG_ACEITE' => $args['FLAG_ACEITE'],
+                            'DATA_EMISSAO' => $args['DATA_EMISSAO'],
+                            'JUROS_MORA' => $args['JUROS_MORA'],
+                            'VALOR_ABATIMENTO' => $args['VALOR_ABATIMENTO'],
+                            'POS_VENCIMENTO' => $args['POS_VENCIMENTO'],
+                            'CODIGO_MOEDA' => '09',
+                            'PAGADOR' => $args['PAGADOR'],
+                            'PAGAMENTO' => $args['PAGAMENTO']
+                        )
+                    )
+                )
+            );
+
+            if (isset($args['SACADOR_AVALISTA'])) {
+                $xml_array["DADOS"]["INCLUI_BOLETO"]["TITULO"]["SACADOR_AVALISTA"] = $args['SACADOR_AVALISTA'];
+            }
+
+            if (isset($args['MULTA'])) {
+                $xml_array["DADOS"]["INCLUI_BOLETO"]["TITULO"]["MULTA"] = $args['MULTA'];
+            }
+
+            if (isset($args['DESCONTOS'])) {
+                $xml_array["DADOS"]["INCLUI_BOLETO"]["TITULO"]["DESCONTOS"] = $args['DESCONTOS'];
+            }
+
+            if (isset($args['FICHA_COMPENSACAO'])) {
+                $xml_array["DADOS"]["INCLUI_BOLETO"]["TITULO"]["FICHA_COMPENSACAO"] = $args['FICHA_COMPENSACAO'];
+            }
+            return $xml_array;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    private function createXmlBaixa(): array
+    {
+        try {
+            $xml_array = array(
+                'sibar_base:HEADER' => array(
+                    'VERSAO' => '2.0',
+                    'AUTENTICACAO' => $this->HashAutenticacao(),
+                    'USUARIO_SERVICO' => 'SGCBS02P',
+                    'OPERACAO' => 'BAIXA_BOLETO',
+                    'SISTEMA_ORIGEM' => 'SIGCB',
+                    'UNIDADE' => $this->GetUnidade(),
+                    'IDENTIFICADOR_ORIGEM' => $this->consulta['IDENTIFICADOR_ORIGEM'],
+                    'DATA_HORA' => date('YmdHis'),
+                    'ID_PROCESSO' => $this->GetCodigoBeneficiario(),
+                ),
+                'DADOS' => array(
+                    'BAIXA_BOLETO' => array(
+                        'CODIGO_BENEFICIARIO' => $this->GetCodigoBeneficiario(),
+                        'NOSSO_NUMERO' => $this->GetNossoNumero()
+                    )
+                )
+            );
+            return $xml_array;
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
 }

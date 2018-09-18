@@ -36,7 +36,7 @@ class Consulta extends Base
 
             $ws = new Webservice($parsedBody['HEADER']);
 
-            $arr = $ws->Consulta();
+            $arr = $ws->Consultar();
 
             if ($arr->getCodigoRetorno() !== 0) {
                 return $this->erros($response, $arr->getMensagemRetorno(), $arr->getArray(), $parsedBody);

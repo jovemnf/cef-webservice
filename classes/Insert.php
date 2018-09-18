@@ -160,7 +160,7 @@ class Insert extends Base
 
             $ws = new Webservice($parsedBody['HEADER']);
 
-            $arr = $ws->Insert($parsedBody['DADOS']);
+            $arr = $ws->Inserir($parsedBody['DADOS']);
 
             if ($arr->getCodigoRetorno() !== 0) {
                 return $this->getErros($response, $arr->getMensagemRetorno(), $arr->getArray());

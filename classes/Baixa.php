@@ -37,7 +37,7 @@ class Baixa extends Base
 
             $ws = new Webservice($parsedBody['HEADER']);
 
-            $arr = $ws->Baixa();
+            $arr = $ws->Baixar();
 
             if ($arr->getCodigoRetorno() !== 0) {
                 return $this->getErros($response, $arr->getMensagemRetorno(), $arr->getArray());

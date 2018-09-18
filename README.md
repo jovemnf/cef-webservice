@@ -153,10 +153,6 @@ Valores retornados
                             "CEP": "28100000"
                         }
                     },
-                    "SACADOR_AVALISTA": {
-                        "CNPJ": "10884488000122",
-                        "RAZAO_SOCIAL": "EMPRESA A"
-                    },
                     "MULTA": {
                         "DATA": "2018-08-22",
                         "PERCENTUAL": "2.00"
@@ -179,13 +175,17 @@ Valores retornados
     }
 }
 ```
+### Incluindo boleto
+
+JSON enviado a rota /incluir
+
 
 ```json
 {
 	"HEADER": {
         "CODIGO_BENEFICIARIO": 123456,
         "NOSSO_NUMERO": "14000050000000001",
-        "UNIDADE": 2524,
+        "UNIDADE": 1234,
         "CNPJ": "10584466006703"
     },
     "DADOS": {
@@ -212,7 +212,7 @@ Valores retornados
 	    },
 	    "PAGADOR": {
 	        "CPF": "09772938567",
-	        "NOME": "WALLACE PACHECO DA SILVA",
+	        "NOME": "TESTE BARRETO ALVES",
 	        "ENDERECO": {
 	            "LOGRADOURO": "AV PELINCA, 245",
 	            "BAIRRO": "PELINCA",
@@ -225,3 +225,42 @@ Valores retornados
 }
 ```
 
+Caso tenha inserido retornará o seguinte
+
+```json
+{
+    "status": 200,
+    "text": "",
+    "returned": {
+        "HEADER": {
+            "VERSAO": "2.0",
+            "AUTENTICACAO": "LQf93vlh778889rJ/4l0tTExw0Ucwh5999y4oqw/Q4yGE=",
+            "USUARIO_SERVICO": "SGCBS02P",
+            "OPERACAO": "INCLUI_BOLETO",
+            "SISTEMA_ORIGEM": "SIGCB",
+            "UNIDADE": "1234",
+            "IDENTIFICADOR_ORIGEM": "::1",
+            "DATA_HORA": "20180918090050",
+            "ID_PROCESSO": "278972"
+        },
+        "COD_RETORNO": "00",
+        "ORIGEM_RETORNO": "MANUTENCAO_COBRANCA_BANCARIA",
+        "MSG_RETORNO": "",
+        "DADOS": {
+            "CONTROLE_NEGOCIAL": {
+                "ORIGEM_RETORNO": "SIGCB",
+                "COD_RETORNO": "0",
+                "MENSAGENS": {
+                    "RETORNO": "(0) OPERACAO EFETUADA"
+                }
+            },
+            "INCLUI_BOLETO": {
+                "CODIGO_BARRAS": "10491809000002000002789728000105040000000010",
+                "LINHA_DIGITAVEL": "10492789792800010504000000000109180900000200000",
+                "NOSSO_NUMERO": "0",
+                "URL": "https://boletoonline.caixa.gov.br/ecobranca/SIGCB/imprimir/0278972/14000050000000001"
+            }
+        }
+    }
+}
+```

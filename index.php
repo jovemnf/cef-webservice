@@ -77,7 +77,7 @@ try {
 
     $app->post('/consultar[/{type}]', Consulta::class . ':post');
     $app->post('/baixar[/{type}]', Baixa::class . ':post');
-    $app->post('/insert', Insert::class . ':post');
+    $app->post('/incluir', Insert::class . ':post');
     $app->get('/status', Home::class . ':index');
     $app->get('/token', Home::class . ':getToken');
 
