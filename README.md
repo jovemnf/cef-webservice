@@ -6,8 +6,12 @@
 
 # Instalação com **composer**
 
-```sh
-$ composer install
+```console
+docker-compose up
+
+docker exec -it cef bash
+
+php composer.phar update --no-interaction --ansi
 ```
 
 ## Usando
