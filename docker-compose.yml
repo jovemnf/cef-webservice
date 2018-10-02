@@ -1,0 +1,10 @@
+version: "3.5"
+services:
+  cef:
+    container_name: cef
+    restart: always
+    build: .
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8082:80"

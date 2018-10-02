@@ -54,7 +54,7 @@ try {
         return $response;
     });
 
-    $app->add(function ($req, $res, $next) {
+    $app->add(function (Request $req,Response $res, $next) {
         $response = $next($req, $res);
         return $response
             ->withHeader('Access-Control-Allow-Origin', '*')
@@ -66,7 +66,7 @@ try {
         "path" => ["/consulta"],
         "ignore" => ["/status"],
         "secret" => getenv('KEY_SECRET'),
-        "error" => function ($response, $arguments) {
+        "error" => function (Response $response, $arguments) {
             $data = array();
             $data["status"] = 401;
             $data["error"] = $arguments["message"];
