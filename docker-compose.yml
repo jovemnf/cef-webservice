@@ -11,9 +11,3 @@ services:
       - .:/var/www/html
     ports:
       - "8082:80"
-    networks:
-      - ca-network
-
-networks:
-    ca-network:
-        external: true
