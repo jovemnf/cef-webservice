@@ -51,13 +51,16 @@ class Consulta extends Base
             $status = trim($aux[1]);
 
             $paid = false;
+            $down = false;
 
             switch ($status) {
                 case "LIQUIDADO":
                 case "LIQUIDADO NO CARTORIO":
                 case "TITULO JA PAGO NO DIA":
-                case "BAIXADO POR DEVOLUCAO":
                     $paid = true;
+                    break;
+                case "BAIXADO POR DEVOLUCAO":
+                    $down = true;
                     break;
             }
 
@@ -65,6 +68,7 @@ class Consulta extends Base
                 "status" => 200,
                 "text" => $status,
                 "paid" => $paid,
+                "down" => $down,
                 "returned" => $arr->getArray()
             ));
 
