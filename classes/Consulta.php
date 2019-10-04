@@ -56,6 +56,7 @@ class Consulta extends Base
                 case "LIQUIDADO":
                 case "LIQUIDADO NO CARTORIO":
                 case "TITULO JA PAGO NO DIA":
+                case "BAIXADO POR DEVOLUCAO":
                     $paid = true;
                     break;
             }
