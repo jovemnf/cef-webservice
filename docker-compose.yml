@@ -11,13 +11,3 @@ services:
       - .:/var/www/html
     ports:
       - "8082:80"
-    networks:
-      - cef-network
-
-networks:
-  cef-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.50.1.0/24
-          gateway: 172.50.1.1
