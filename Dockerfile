@@ -24,4 +24,4 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN /usr/local/bin/composer update --no-interaction --ansi
 
 # Change current user to www
-USER www
+#USER www
