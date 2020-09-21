@@ -7,7 +7,7 @@ RUN apt-get install zip libzip-dev unzip git -y
 RUN apt-get clean
 RUN apt-get autoclean
 
-RUN docker-php-ext-install pdo_mysql mbstring zip
+RUN docker-php-ext-install pdo_mysql zip
 
 # Add user for laravel application
 RUN groupadd -g 1000 www
