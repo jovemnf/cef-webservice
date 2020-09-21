@@ -21,7 +21,7 @@ COPY --chown=www:www . /var/www/html
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN /usr/local/bin/composercomposer update --no-interaction --ansi
+RUN /usr/local/bin/composer update --no-interaction --ansi
 
 # Change current user to www
 USER www
