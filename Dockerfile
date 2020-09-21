@@ -19,9 +19,11 @@ COPY . /var/www/html
 # Copy existing application directory permissions
 COPY --chown=www:www . /var/www/html
 
-# Change current user to www
-USER www
+
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 RUN composer update --no-interaction --ansi
+
+# Change current user to www
+USER www
